@@ -1,14 +1,31 @@
+import os
+
 import discord
+from discord.ext import commands, tasks
 import json
 
+from discord.ext.commands import CommandNotFound
 
-class Bot(discord.Client):
-    async def on_ready(self):
-        print(f"Logged on as {self.user}")
+PREFIX = "!"
 
-    @staticmethod
-    async def on_message(message):
-        print(f"Message from {message.author} : {message.content}")
+client = commands.Bot(command_prefix=PREFIX, case_insensitive=True)
+
+for file in os.listdir("./commands"):  # lists all the cog files inside the command folder.
+    if file.endswith(".py"):  # It gets all the cogs that ends with a ".py".
+        client.load_extension(
+            f"commands.{file[:-3]}")  # It gets the name of the file removing the ".py" and loads the command.
+
+
+@client.event
+async def on_ready():
+    print(f"Logged on as {client.user}")
+
+
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, CommandNotFound):
+        return
+    raise error
 
 
 def get_token():
@@ -17,5 +34,4 @@ def get_token():
 
 
 if __name__ == '__main__':
-    client = Bot()
     client.run(get_token())
