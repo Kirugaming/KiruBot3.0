@@ -5,7 +5,7 @@ class Ping(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(description="Ping Command: Tests the Bot.")
     async def ping(self, ctx):
         await ctx.send("Pong!")
 

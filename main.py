@@ -8,7 +8,7 @@ from discord.ext.commands import CommandNotFound
 
 PREFIX = "!"
 
-client = commands.Bot(command_prefix=PREFIX, case_insensitive=True)
+client = commands.Bot(command_prefix=PREFIX, case_insensitive=True, help_command=None)
 
 for file in os.listdir("./commands"):  # lists all the cog files inside the command folder.
     if file.endswith(".py"):  # It gets all the cogs that ends with a ".py".
