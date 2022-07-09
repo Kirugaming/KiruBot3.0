@@ -1,32 +1,43 @@
+import os
+
 import discord
 import json
 from discord import app_commands
+from discord.ext import commands
 
-
-class BotClient(discord.Client):
-    def __init__(self):
-        super().__init__(intents=discord.Intents.all())
-
-        self.synced = False
-
-    async def on_ready(self):
-        await self.wait_until_ready()
-        if not self.synced:
-            # Sync commands to discord
-            await tree.sync(guild=None)
-            self.synced = True
-        print(f'Logged in as {self.user.name}')
-
-
-# create a client object
-client = BotClient()
+bot_client = commands.Bot(command_prefix='!',
+                          intents=discord.Intents.all(),
+                          help_command=None,
+                          strip_after_prefix=True)
 # create slash command tree for slash commands
-tree = app_commands.CommandTree(client)
+# tree = app_commands.CommandTree(bot_client)
 
 
-@tree.command(name='ping', description='Pong!')
-async def ping(interaction: discord.Interaction):
-    await interaction.response.send_message("Pong!")
+@bot_client.event
+async def on_ready():
+    print("Syncing commands...")
+    for file in os.listdir("./commands"):  # lists all the cog files inside the command folder.
+        if file.endswith(".py"):  # It gets all the cogs that ends with a ".py".
+            await bot_client.load_extension(
+                f"commands.{file[:-3]}")  # It gets the name of the file removing the ".py" and loads the command.
+
+    # Sync commands to discord
+    await bot_client.tree.sync(guild=None)
+    print("Commands synced!")
+    print(f'Logged in as {bot_client.user.name}')
+
+
+@bot_client.event
+async def on_message(message):
+    if message.author == bot_client.user:
+        return
+    print(message.content)
+
+
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        return
+    raise error
 
 
 def get_token():
@@ -35,4 +46,4 @@ def get_token():
 
 
 if __name__ == '__main__':
-    client.run(get_token())
+    bot_client.run(get_token())
