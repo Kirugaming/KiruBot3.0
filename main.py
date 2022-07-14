@@ -38,7 +38,7 @@ async def load_scheduling():
 
 async def execute_schedule(schedule_object):
     message = bot_client.get_partial_messageable(schedule_object.channel_id_to_announce)
-    print("Sending message: " + schedule_object.content)
+    print(f"Sending message: {schedule_object.content}")
     await message.send(f"{schedule_object.role_to_announce} {schedule_object.content}")
 
     # delete the schedule from the database
