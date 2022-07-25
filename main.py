@@ -12,7 +12,7 @@ import db
 
 from db import create_tables
 
-bot_client = commands.Bot(command_prefix='!',
+bot_client = commands.Bot(command_prefix='-',
                           intents=discord.Intents.all(),
                           help_command=None,
                           strip_after_prefix=True)
@@ -44,20 +44,13 @@ async def execute_schedule(schedule_object):
     # delete the schedule from the database
     session = db.Session()
     session.delete(schedule_object)
-    session.commit()    # commit the changes to the database
+    session.commit()  # commit the changes to the database
 
 
 @bot_client.event
 async def on_ready():
     print("Bot ready!")
     print(f'Logged in as {bot_client.user.name}')
-
-
-@bot_client.event
-async def on_message(message):
-    if message.author == bot_client.user:
-        return
-    print(f"{message.author}: {message.content}")
 
 
 async def on_command_error(ctx, error):
