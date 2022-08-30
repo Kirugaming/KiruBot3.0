@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 from datetime import datetime
 
@@ -9,6 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord.ext import commands
 
 import db
+from commands.displayRoles import PickRoleView
 
 from db import create_tables
 
@@ -16,6 +18,8 @@ bot_client = commands.Bot(command_prefix='-',
                           intents=discord.Intents.all(),
                           help_command=None,
                           strip_after_prefix=True)
+# setup logging since im not doing client.run()
+logging.basicConfig(level=logging.INFO)
 
 # create a new scheduler
 scheduler = AsyncIOScheduler(timezone='America/Chicago')
@@ -38,7 +42,7 @@ async def load_scheduling():
 
 async def execute_schedule(schedule_object):
     message = bot_client.get_partial_messageable(schedule_object.channel_id_to_announce)
-    print("Sending message: " + schedule_object.content)
+    print(f"Sending message: {schedule_object.content}")
     await message.send(f"{schedule_object.role_to_announce} {schedule_object.content}")
 
     # delete the schedule from the database
@@ -51,6 +55,7 @@ async def execute_schedule(schedule_object):
 async def on_ready():
     print("Bot ready!")
     print(f'Logged in as {bot_client.user.name}')
+    await add_persistent_views()
 
 
 async def on_command_error(ctx, error):
@@ -59,32 +64,48 @@ async def on_command_error(ctx, error):
     raise error
 
 
-@bot_client.event
-async def setup_hook():
-    print("Preparing database...")
-    # Create database and its models if it doesn't exist already
-    create_tables()
-    print("Database prepared.")
-    # Sync commands to discord
-    await bot_client.tree.sync(guild=None)
-    print("Commands synced!")
-
-
 def get_token():
     with open('token.json') as token_file:
         return json.load(token_file)["token"]
 
 
+async def add_persistent_views():
+    await bot_client.wait_until_ready()
+    print("Adding persistent views...")
+    # Add persistent views from the database
+
+    for view_info in db.Session().query(db.RoleSelectionView).all():
+        server_roles = [role for role in bot_client.get_channel(view_info.channel_id).guild.roles if
+                        role.name != "@everyone"]
+
+        bot_client.add_view(
+            PickRoleView(server_roles, view_info.selected_roles))
+    print("Persistent views added!")
+
+
+@bot_client.event
+async def setup_hook():
+    # Sync commands to discord
+    await bot_client.tree.sync(guild=None)
+    print("Commands synced!")
+
+
 async def main():
     async with bot_client:
+        print("Preparing database...")
+        # Create database and its models if it doesn't exist already
+        create_tables()
+        print("Database prepared.")
         print("Loading scheduling...")
         bot_client.loop.create_task(load_scheduling())
         print("Scheduling loaded!")
+
         print("Syncing commands...")
         for file in os.listdir("./commands"):  # lists all the cog files inside the command folder.
             if file.endswith(".py"):  # It gets all the cogs that ends with a ".py".
                 await bot_client.load_extension(
                     f"commands.{file[:-3]}")  # It gets the name of the file removing the ".py" and loads the command.
+
         await bot_client.start(get_token())
 
 
