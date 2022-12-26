@@ -4,8 +4,8 @@ import os
 from datetime import datetime
 
 import discord
-import json
 
+from dotenv import load_dotenv
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord.ext import commands
 
@@ -26,6 +26,7 @@ logging.basicConfig(level=logging.INFO)
 # create a new scheduler
 scheduler = AsyncIOScheduler(timezone='America/Chicago')
 
+# context menus need to be imported after bot_client is made because it puts the context menus into bot_clients tree
 from contextMenus import *
 
 async def load_scheduling():
@@ -67,9 +68,7 @@ async def on_command_error(ctx, error):
     raise error
 
 
-def get_token():
-    with open('token.json') as token_file:
-        return json.load(token_file)["token"]
+
 
 
 async def add_persistent_views():
@@ -113,7 +112,10 @@ async def main():
                     f"commands.{file[:-3]}")  # It gets the name of the file removing the ".py" and loads the command.
         print("-----")
 
-        await bot_client.start(get_token())
+        # load stuff from .env
+        load_dotenv()
+
+        await bot_client.start(os.environ["BOT_TOKEN"])
 
 
 if __name__ == '__main__':

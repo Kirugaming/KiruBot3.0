@@ -1,3 +1,4 @@
 git+https://github.com/Rapptz/discord.py
 SQLAlchemy~=1.4.39
 ApScheduler~=3.9.1
+python-dotenv~=0.21.0

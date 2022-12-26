@@ -50,7 +50,7 @@ class MakeRoleMenu(commands.Cog):
     async def makerolemenu(self, interaction: discord.Interaction, roles: str):
         # check if user has admin permissions
         if interaction.user.guild_permissions.administrator:
-            # check if roles were given
+            # 2check if roles were given
             if roles.startswith("<@"):
                 server_roles = [role for role in interaction.guild.roles if role.name != "@everyone"]
                 # parse text for roles
