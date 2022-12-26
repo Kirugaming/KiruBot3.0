@@ -14,6 +14,8 @@ from commands.displayRoles import PickRoleView
 
 from db import create_tables
 
+
+
 bot_client = commands.Bot(command_prefix='-',
                           intents=discord.Intents.all(),
                           help_command=None,
@@ -24,6 +26,7 @@ logging.basicConfig(level=logging.INFO)
 # create a new scheduler
 scheduler = AsyncIOScheduler(timezone='America/Chicago')
 
+from contextMenus import *
 
 async def load_scheduling():
     await bot_client.wait_until_ready()
@@ -86,7 +89,10 @@ async def add_persistent_views():
 @bot_client.event
 async def setup_hook():
     # Sync commands to discord
+
     await bot_client.tree.sync(guild=None)
+
+
     print("Commands synced!")
 
 
@@ -100,11 +106,12 @@ async def main():
         bot_client.loop.create_task(load_scheduling())
         print("Scheduling loaded!")
 
-        print("Syncing commands...")
+        print("Syncing commands...\n-----")
         for file in os.listdir("./commands"):  # lists all the cog files inside the command folder.
             if file.endswith(".py"):  # It gets all the cogs that ends with a ".py".
                 await bot_client.load_extension(
                     f"commands.{file[:-3]}")  # It gets the name of the file removing the ".py" and loads the command.
+        print("-----")
 
         await bot_client.start(get_token())
 

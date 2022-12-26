@@ -39,6 +39,7 @@ class Schedule(commands.Cog):
         await interaction.response.send_message(
             f"\"{content}\" \nwill be sent on {month}/{day}/{year} at {hour}:{minute} in <#{channel}> to {role}")
 
+        # restart bot because i don't know how to dynamically add scheduling from this method
         os.execv(sys.executable, ['python', 'main.py'])
 
 
